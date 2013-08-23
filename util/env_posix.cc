@@ -33,6 +33,7 @@
 #include "util/throttle.h"
 #include "db/dbformat.h"
 #include "leveldb/perf_count.h"
+#include "leveldb/debug.h"
 
 
 #if _XOPEN_SOURCE >= 600 || _POSIX_C_SOURCE >= 200112L
@@ -77,7 +78,7 @@ class PosixSequentialFile: public SequentialFile {
 
  public:
   PosixSequentialFile(const std::string& fname, FILE* f)
-      : filename_(fname), file_(f) { }
+      : filename_(fname), file_(f) { DEBUG_INFO("SequentialFile", filename_); }
   virtual ~PosixSequentialFile() { fclose(file_); }
 
   virtual Status Read(size_t n, Slice* result, char* scratch) {
@@ -121,6 +122,7 @@ class PosixRandomAccessFile: public RandomAccessFile {
     //  that start compaction.  See comment in table_cache.cc.
     posix_fadvise(fd_, 0, file_size_, POSIX_FADV_RANDOM);
 #endif
+    DEBUG_INFO("RandomAccessFile", filename_);
   }
   virtual ~PosixRandomAccessFile()
   {
@@ -172,7 +174,7 @@ class PosixMmapReadableFile: public RandomAccessFile {
       : filename_(fname), mmapped_region_(base), length_(length), fd_(fd)
   {
       gPerfCounters->Inc(ePerfROFileOpen);
-
+      DEBUG_INFO("PosixMmapReadableFile", filename_);
 #if defined(HAVE_FADVISE)
     posix_fadvise(fd_, 0, length_, POSIX_FADV_RANDOM);
 #endif
@@ -321,7 +323,7 @@ class PosixMmapFile : public WritableFile {
         pending_sync_(false),
         is_write_only_(is_write_only) {
     assert((page_size & (page_size - 1)) == 0);
-
+    DEBUG_INFO("PosixMmapFile", filename_);
     gPerfCounters->Inc(ePerfRWFileOpen);
   }
 

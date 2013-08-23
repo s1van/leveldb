@@ -18,6 +18,7 @@
 #include "util/coding.h"
 #include "util/logging.h"
 #include "leveldb/perf_count.h"
+#include "leveldb/debug.h"
 
 namespace leveldb {
 
@@ -1321,6 +1322,9 @@ Iterator* VersionSet::MakeInputIterator(Compaction* c) {
 
   Iterator** list = new Iterator*[space];
   int num = 0;
+
+  DEBUG_META_VEC("input-0", c->inputs_[0]);
+  DEBUG_META_VEC("input-1", c->inputs_[1]);
 
   which_limit=gLevelTraits[c->level()+1].m_OverlappedFiles ? 1 : 2;
   for (int which = 0; which < which_limit; which++) {
